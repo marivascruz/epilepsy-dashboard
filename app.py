@@ -140,6 +140,12 @@ if uploaded_file:
     fig.update_layout(xaxis_title="Gene Name", yaxis_title="-log10(p_unified)")
     fig.update_layout(template="plotly_dark")
     st.plotly_chart(fig, use_container_width=True)
+    st.markdown("---")  # Horizontal divider
+
+    st.markdown(
+        "🧠 **Note:** Only genes with more than 15 variants were included in the unified meta regression model.",
+        unsafe_allow_html=True
+    )
 
     # --- AI Gene Interrogation Chat ---
     st.subheader("🔍 Gene AI Chat Assistant")
