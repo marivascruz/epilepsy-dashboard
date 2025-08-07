@@ -14,6 +14,34 @@ client = OpenAI(api_key=st.secrets["OPENAI_API_KEY"])
 st.set_page_config(layout="wide")
 st.title("🧬 Exome Sequencing Dashboard")
 
+def search_wikimedia_images(query, limit=10):
+    url = "https://commons.wikimedia.org/w/api.php"
+    params = {
+        "action": "query",
+        "format": "json",
+        "prop": "imageinfo",
+        "generator": "search",
+        "gsrsearch": query,
+        "gsrlimit": limit,
+        "iiprop": "url",
+        "iiurlwidth": 300,
+        "iiurlheight": 300,
+    }
+    response = requests.get(url, params=params)
+    response.raise_for_status()
+    data = response.json()
+    results = []
+    pages = data.get("query", {}).get("pages", {})
+    for _, page in pages.items():
+        info = page.get("imageinfo", [{}])[0]
+        if "thumburl" in info:
+            results.append({
+                "title": page.get("title", query),
+                "thumburl": info["thumburl"],
+                "pageurl": info["descriptionurl"]
+            })
+    return results
+
 # --- Data Upload and Filtering ---
 @st.cache_data
 def load_data(file_path):
@@ -62,26 +90,17 @@ if uploaded_file:
             )
             response = st.write_stream(stream)
             st.session_state.chat_history.append({"role": "assistant", "content": response})
-    st.subheader("🖼️ Gene Role Figure Finder (from Google)")
-    gene_query = st.text_input("Enter gene name to fetch figure")
+    st.subheader("🖼️ Gene Figure Finder (Wikimedia Commons)")
+    gene_query = st.text_input("Enter gene name to fetch diagram")
     if st.button("Fetch figure") and gene_query:
-        query = f"{gene_query} gene function diagram"
-        search_url = "https://www.google.com/search"
-        headers = {"User-Agent": "Mozilla/5.0"}
-        params = {"q": query, "tbm": "isch"}
-        try:
-            response = requests.get(search_url, headers=headers, params=params)
-            soup = BeautifulSoup(response.text, "html.parser")
-            # Display multiple thumbnails
-            img_tags = soup.find_all("img")
-            valid_urls = [tag["src"] for tag in img_tags if tag.get("src") and tag["src"].startswith("http")]
-            if valid_urls:
-                st.markdown(f"[🔗 View full images on Google](https://www.google.com/search?q={gene_query}+gene+function+diagram&tbm=isch)", unsafe_allow_html=True)
-                for url in valid_urls[:5]:
-                    st.image(url, use_column_width=True)
-            else:
-                st.warning("No valid image found.")
-
+        images = search_wikimedia_images(f"{gene_query} gene diagram")
+        if images:
+            for img in images:
+                st.image(img["thumburl"], caption=img["title"], width=300)
+                st.markdown(f"[🔗 Source Page]({img['pageurl']})", unsafe_allow_html=True)
+        else:
+            st.warning("No images found.")
+    
         except Exception as e:
             st.error(f"Image fetch failed: {e}")
 else:
