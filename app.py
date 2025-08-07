@@ -79,7 +79,8 @@ if uploaded_file:
                 if tag.get("src") and tag["src"].startswith("http")
             ]
             if valid_urls:
-                st.image(valid_urls[0], caption=f"Figure for {gene_query}")
+                for url in valid_urls[:3]:
+                    st.image(url, width=300)
             else:
                 st.warning("No valid image found for your query.")
         except Exception as e:
