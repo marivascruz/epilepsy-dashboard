@@ -12,7 +12,7 @@ from bs4 import BeautifulSoup
 import json
 import html
 st.set_page_config(layout="wide")
-st.title("🧬 Exome Sequencing Dashboard")
+st.title("🧬 Epilepsy exome sequencing dashboard")
 import requests
 from bs4 import BeautifulSoup
 
