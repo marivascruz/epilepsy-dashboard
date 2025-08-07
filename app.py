@@ -7,10 +7,10 @@ from openai import OpenAI
 import requests
 from bs4 import BeautifulSoup
 import urllib.parse
-
-# Load OpenAI key from Streamlit secrets
-client = OpenAI(api_key=st.secrets["OPENAI_API_KEY"])
-
+import requests
+from bs4 import BeautifulSoup
+import json
+import html
 st.set_page_config(layout="wide")
 st.title("🧬 Exome Sequencing Dashboard")
 import requests
@@ -22,23 +22,34 @@ def scrape_bing_images(query, max_results=3):
     }
     params = {
         "q": query,
-        "form": "QBLH",  # Bing image search form
-        "scope": "images"
+        "form": "QBLH"
     }
     response = requests.get("https://www.bing.com/images/search", headers=headers, params=params)
     soup = BeautifulSoup(response.text, "html.parser")
     
-    results = []
-    for img_tag in soup.find_all("img"):
-        src = img_tag.get("src")
-        if src and src.startswith("http") and "mm.bing.net" not in src:
-            results.append({
-                "url": src,
-                "alt": img_tag.get("alt", query)
-            })
-            if len(results) >= max_results:
-                break
-    return results
+    image_data = []
+    for tag in soup.find_all("a", class_="iusc"):
+        m_json = tag.get("m")
+        if m_json:
+            try:
+                metadata = json.loads(html.unescape(m_json))
+                image_url = metadata.get("murl")
+                title = metadata.get("t", query)
+                if image_url:
+                    image_data.append({
+                        "url": image_url,
+                        "title": title
+                    })
+                if len(image_data) >= max_results:
+                    break
+            except Exception:
+                continue
+    return image_data
+
+# Load OpenAI key from Streamlit secrets
+client = OpenAI(api_key=st.secrets["OPENAI_API_KEY"])
+
+
 
 # --- Data Upload and Filtering ---
 @st.cache_data
