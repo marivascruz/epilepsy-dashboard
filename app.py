@@ -25,6 +25,27 @@ st.markdown(
     unsafe_allow_html=True
 )
 
+# Apply dark theme override manually
+st.markdown(
+    """
+    <style>
+        html, body, [class*="css"] {
+            background-color: #0e1117;
+            color: #fafafa;
+        }
+        .stTextInput > div > input,
+        .stSelectbox > div > div > div > input {
+            background-color: #262730;
+            color: #fafafa;
+        }
+        .stButton > button {
+            background-color: #00c4b4;
+            color: white;
+        }
+    </style>
+    """,
+    unsafe_allow_html=True
+)
 
 import requests
 from bs4 import BeautifulSoup
@@ -88,14 +109,14 @@ if uploaded_file is not None:
     source_label = "uploaded file"
     uploaded = 1
 else:
-    default_path = "epilepsy_variants_unified_model_pvalues.tsv"
-    df = pd.read_csv(default_path, sep="\t")
+    uploaded_file = "epilepsy_variants_unified_model_pvalues.tsv"
+    df = pd.read_csv(uploaded_file, sep="\t")
     source_label = "default dataset (epilepsy_variants_unified_model_pvalues.tsv)"
     uploaded = 1
 
 st.success(f"Loaded data from {source_label}")
-
-if uploaded:
+st.markdown(f"**Data source**: `{source_label}`")
+if uploaded_file:
     df = load_data(uploaded_file)
     groups = df["group"].unique()
     selected_group = st.selectbox("Select group to visualize", groups)
