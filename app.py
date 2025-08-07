@@ -16,11 +16,10 @@ st.set_page_config(layout="wide")
 st.title("🧬🧠 Epilepsy exome sequencing dashboard")
 st.markdown(
     """
-    <div style='text-align: center;'>
+    <div style='text-align: left;'>
         <a href='https://rivaslab.stanford.edu' target='_blank'>
-    <img src='https://mrivas.su.domains/gbe/wp-content/uploads/2025/01/gbe.png' width='120'/>
-            <p style='font-size: 0.9em;'>Built by Rivas Lab</p>
-        </a>
+    <p style='font-size: 0.9em;'><img src='https://mrivas.su.domains/gbe/wp-content/uploads/2025/01/gbe.png' width='100'/>Built by Rivas Lab
+       </p> </a>
     </div>
     """,
     unsafe_allow_html=True
@@ -122,14 +121,16 @@ if uploaded_file:
     groups = df["group"].unique()
     selected_group = st.selectbox("Select group to visualize", groups)
     filtered_df = df[df["group"] == selected_group]
+    genesrm = ['TTN','PCDHGA11','PCDHAC2']
+    filtered_df = filtered_df[~filtered_df['gene_name'].isin(genesrm)]
     filtered_df = filtered_df[filtered_df["p_unified"] < 0.001]
     filtered_df = filtered_df[filtered_df["n_variants"] > 15]
-    st.subheader("Manhattan-style Plot")
+    st.subheader("Epilepsy results for analysis group: " + selected_group)
     sorted_df = filtered_df.sort_values("-log10_p_unified", ascending=False)
     sorted_df = format_scientific(sorted_df, sci_cols)
     st.dataframe(sorted_df.reset_index(drop=True))
     fig = px.scatter(
-        sorted_df,
+        sorted_df[sorted_df["-log10_p_unified"] >= 5],
         x="gene_name",
         y="-log10_p_unified",
         hover_data=["gene_id", "n_variants"],
@@ -139,9 +140,6 @@ if uploaded_file:
     fig.update_layout(xaxis_title="Gene Name", yaxis_title="-log10(p_unified)")
     fig.update_layout(template="plotly_dark")
     st.plotly_chart(fig, use_container_width=True)
-
-    st.subheader("Gene Table")
-    st.dataframe(sorted_df.reset_index(drop=True))
 
     # --- AI Gene Interrogation Chat ---
     st.subheader("🔍 Gene AI Chat Assistant")
@@ -162,16 +160,5 @@ if uploaded_file:
             )
             response = st.write_stream(stream)
             st.session_state.chat_history.append({"role": "assistant", "content": response})
-    st.subheader("🖼️ Gene Figure Finder (Unofficial Bing Scrape)")
-    gene_query = st.text_input("Enter gene name to fetch figure")
-    if st.button("Fetch figure") and gene_query:
-        query = f"{gene_query} gene function diagram"
-        images = scrape_bing_images(query, max_results=3)
-        if images:
-            for img in images:
-                st.image(img["url"], caption=img["title"], width=300)
-                st.markdown(f"[🔗 View image in browser]({img['url']})", unsafe_allow_html=True)
-        else:
-            st.warning("No images found.")
 else:
     st.info("Please upload a gene result file to begin.")
