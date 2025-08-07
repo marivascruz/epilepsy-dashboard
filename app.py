@@ -11,12 +11,13 @@ import requests
 from bs4 import BeautifulSoup
 import json
 import html
-st.set_page_config(layout="wide")
+#st.set_page_config(layout="wide")
 st.title("🧬🧠 Epilepsy exome sequencing dashboard")
 st.markdown(
     """
     <div style='text-align: center;'>
         <a href='https://rivaslab.stanford.edu' target='_blank'>
+    <img src='https://mrivas.su.domains/gbe/wp-content/uploads/2025/01/gbe.png' width='120'/>
             <p style='font-size: 0.9em;'>Built by Rivas Lab</p>
         </a>
     </div>
@@ -85,14 +86,16 @@ uploaded_file = st.file_uploader("Upload your exome variant summary file (.csv o
 if uploaded_file is not None:
     df = pd.read_csv(uploaded_file, sep=None, engine="python")
     source_label = "uploaded file"
+    uploaded = 1
 else:
     default_path = "epilepsy_variants_unified_model_pvalues.tsv"
     df = pd.read_csv(default_path, sep="\t")
     source_label = "default dataset (epilepsy_variants_unified_model_pvalues.tsv)"
+    uploaded = 1
 
 st.success(f"Loaded data from {source_label}")
 
-if uploaded_file:
+if uploaded:
     df = load_data(uploaded_file)
     groups = df["group"].unique()
     selected_group = st.selectbox("Select group to visualize", groups)
