@@ -12,6 +12,7 @@ from bs4 import BeautifulSoup
 import json
 import html
 #st.set_page_config(layout="wide")
+st.set_page_config(layout="wide")
 st.title("🧬🧠 Epilepsy exome sequencing dashboard")
 st.markdown(
     """
