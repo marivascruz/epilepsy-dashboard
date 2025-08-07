@@ -65,6 +65,7 @@ if uploaded_file:
     selected_group = st.selectbox("Select group to visualize", groups)
     filtered_df = df[df["group"] == selected_group]
     filtered_df = filtered_df[filtered_df["p_unified"] < 0.001]
+    filtered_df = filtered_df[filtered_df["n_variants"] < 15]
     st.subheader("Manhattan-style Plot")
     fig = px.scatter(
         filtered_df,
