@@ -13,33 +13,31 @@ client = OpenAI(api_key=st.secrets["OPENAI_API_KEY"])
 
 st.set_page_config(layout="wide")
 st.title("🧬 Exome Sequencing Dashboard")
+import requests
+from bs4 import BeautifulSoup
 
-def search_wikimedia_images(query, limit=10):
-    url = "https://commons.wikimedia.org/w/api.php"
-    params = {
-        "action": "query",
-        "format": "json",
-        "prop": "imageinfo",
-        "generator": "search",
-        "gsrsearch": query,
-        "gsrlimit": limit,
-        "iiprop": "url",
-        "iiurlwidth": 300,
-        "iiurlheight": 300,
+def scrape_bing_images(query, max_results=3):
+    headers = {
+        "User-Agent": "Mozilla/5.0"
     }
-    response = requests.get(url, params=params)
-    response.raise_for_status()
-    data = response.json()
+    params = {
+        "q": query,
+        "form": "QBLH",  # Bing image search form
+        "scope": "images"
+    }
+    response = requests.get("https://www.bing.com/images/search", headers=headers, params=params)
+    soup = BeautifulSoup(response.text, "html.parser")
+    
     results = []
-    pages = data.get("query", {}).get("pages", {})
-    for _, page in pages.items():
-        info = page.get("imageinfo", [{}])[0]
-        if "thumburl" in info:
+    for img_tag in soup.find_all("img"):
+        src = img_tag.get("src")
+        if src and src.startswith("http") and "mm.bing.net" not in src:
             results.append({
-                "title": page.get("title", query),
-                "thumburl": info["thumburl"],
-                "pageurl": info["descriptionurl"]
+                "url": src,
+                "alt": img_tag.get("alt", query)
             })
+            if len(results) >= max_results:
+                break
     return results
 
 # --- Data Upload and Filtering ---
@@ -90,14 +88,15 @@ if uploaded_file:
             )
             response = st.write_stream(stream)
             st.session_state.chat_history.append({"role": "assistant", "content": response})
-    st.subheader("🖼️ Gene Figure Finder (Wikimedia Commons)")
-    gene_query = st.text_input("Enter gene name to fetch diagram")
+    st.subheader("🖼️ Gene Figure Finder (Unofficial Bing Scrape)")
+    gene_query = st.text_input("Enter gene name to fetch figure")
     if st.button("Fetch figure") and gene_query:
-        images = search_wikimedia_images(f"{gene_query} gene diagram")
+        query = f"{gene_query} gene function diagram"
+        images = scrape_bing_images(query, max_results=3)
         if images:
             for img in images:
-                st.image(img["thumburl"], caption=img["title"], width=300)
-                st.markdown(f"[🔗 Source Page]({img['pageurl']})", unsafe_allow_html=True)
+                st.image(img["url"], caption=img["alt"], width=300)
+                st.markdown(f"[🔗 View image in browser]({img['url']})", unsafe_allow_html=True)
         else:
             st.warning("No images found.")
 else:
