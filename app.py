@@ -67,8 +67,12 @@ if uploaded_file:
     filtered_df = filtered_df[filtered_df["p_unified"] < 0.001]
     filtered_df = filtered_df[filtered_df["n_variants"] > 15]
     st.subheader("Manhattan-style Plot")
+    sorted_df = filtered_df.sort_values("-log10_p_unified", ascending=False)
+    for col in sorted_df.select_dtypes(include=["float64", "float32"]).columns:
+        sorted_df[col] = sorted_df[col].apply(lambda x: f"{x:.2e}")
+    st.dataframe(sorted_df.reset_index(drop=True))
     fig = px.scatter(
-        filtered_df,
+        sorted_df,
         x="gene_name",
         y="-log10_p_unified",
         hover_data=["gene_id", "n_variants"],
@@ -76,10 +80,11 @@ if uploaded_file:
         title=f"Manhattan Plot for Group: {selected_group}"
     )
     fig.update_layout(xaxis_title="Gene Name", yaxis_title="-log10(p_unified)")
+    fig.update_layout(template="plotly_dark")
     st.plotly_chart(fig, use_container_width=True)
 
     st.subheader("Gene Table")
-    st.dataframe(filtered_df.reset_index(drop=True))
+    st.dataframe(sorted_df.reset_index(drop=True))
 
     # --- AI Gene Interrogation Chat ---
     st.subheader("🔍 Gene AI Chat Assistant")
