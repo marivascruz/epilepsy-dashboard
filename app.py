@@ -100,8 +100,5 @@ if uploaded_file:
                 st.markdown(f"[🔗 Source Page]({img['pageurl']})", unsafe_allow_html=True)
         else:
             st.warning("No images found.")
-    
-        except Exception as e:
-            st.error(f"Image fetch failed: {e}")
 else:
     st.info("Please upload a gene result file to begin.")
