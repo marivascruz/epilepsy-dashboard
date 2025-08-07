@@ -13,6 +13,19 @@ import json
 import html
 st.set_page_config(layout="wide")
 st.title("🧬 Epilepsy exome sequencing dashboard")
+st.markdown(
+    \"\"\"
+    <div style='text-align: center;'>
+        <a href='https://rivaslab.stanford.edu' target='_blank'>
+            <img src='https://mrivas.su.domains/gbe/wp-content/uploads/2025/01/gbe.png' width='120'/>
+            <p style='font-size: 0.9em;'>Rivas Lab</p>
+        </a>
+    </div>
+    \"\"\",
+    unsafe_allow_html=True
+)
+
+
 import requests
 from bs4 import BeautifulSoup
 
