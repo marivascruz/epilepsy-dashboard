@@ -106,7 +106,7 @@ if uploaded_file:
         images = scrape_bing_images(query, max_results=3)
         if images:
             for img in images:
-                st.image(img["url"], caption=img["alt"], width=300)
+                st.image(img["url"], caption=img["title"], width=300)
                 st.markdown(f"[🔗 View image in browser]({img['url']})", unsafe_allow_html=True)
         else:
             st.warning("No images found.")
