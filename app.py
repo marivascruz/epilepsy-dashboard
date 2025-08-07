@@ -27,7 +27,7 @@ if uploaded_file:
     groups = df["group"].unique()
     selected_group = st.selectbox("Select group to visualize", groups)
     filtered_df = df[df["group"] == selected_group]
-
+    filtered_df = filtered_df[filtered_df["p_unified"] < 0.001]
     st.subheader("Manhattan-style Plot")
     fig = px.scatter(
         filtered_df,
@@ -72,17 +72,16 @@ if uploaded_file:
         try:
             response = requests.get(search_url, headers=headers, params=params)
             soup = BeautifulSoup(response.text, "html.parser")
+            # Display multiple thumbnails
             img_tags = soup.find_all("img")
-            # Filter for valid external image URLs (exclude logos, base64, relative paths)
-            valid_urls = [
-                tag["src"] for tag in img_tags
-                if tag.get("src") and tag["src"].startswith("http")
-            ]
+            valid_urls = [tag["src"] for tag in img_tags if tag.get("src") and tag["src"].startswith("http")]
             if valid_urls:
-                for url in valid_urls[:3]:
-                    st.image(url, width=300)
+                st.markdown(f"[🔗 View full images on Google](https://www.google.com/search?q={gene_query}+gene+function+diagram&tbm=isch)", unsafe_allow_html=True)
+                for url in valid_urls[:5]:
+                    st.image(url, use_column_width=True)
             else:
-                st.warning("No valid image found for your query.")
+                st.warning("No valid image found.")
+
         except Exception as e:
             st.error(f"Image fetch failed: {e}")
 else:
