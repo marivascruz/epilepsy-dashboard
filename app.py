@@ -50,6 +50,15 @@ def scrape_bing_images(query, max_results=3):
 client = OpenAI(api_key=st.secrets["OPENAI_API_KEY"])
 
 
+def format_scientific(df, columns, sig_digits=2):
+    df_formatted = df.copy()
+    for col in columns:
+        if col in df_formatted.columns:
+            df_formatted[col] = df_formatted[col].apply(lambda x: f"{x:.{sig_digits}e}")
+    return df_formatted
+
+# Specify the columns to convert
+sci_cols = ["p_constraint", "p_pathogenicity", "p_unified", "p_missense", "p_pLoF"]
 
 # --- Data Upload and Filtering ---
 @st.cache_data
@@ -68,8 +77,7 @@ if uploaded_file:
     filtered_df = filtered_df[filtered_df["n_variants"] > 15]
     st.subheader("Manhattan-style Plot")
     sorted_df = filtered_df.sort_values("-log10_p_unified", ascending=False)
-    for col in sorted_df.select_dtypes(include=["float64", "float32"]).columns:
-        sorted_df[col] = sorted_df[col].apply(lambda x: f"{x:.2e}")
+    sorted_df = format_scientific(sorted_df, sci_cols)
     st.dataframe(sorted_df.reset_index(drop=True))
     fig = px.scatter(
         sorted_df,
