@@ -1,4 +1,3 @@
-
 import os
 import pandas as pd
 import numpy as np
@@ -7,6 +6,7 @@ import streamlit as st
 from openai import OpenAI
 import requests
 from bs4 import BeautifulSoup
+import urllib.parse
 
 # Load OpenAI key from Streamlit secrets
 client = OpenAI(api_key=st.secrets["OPENAI_API_KEY"])
@@ -62,20 +62,27 @@ if uploaded_file:
             )
             response = st.write_stream(stream)
             st.session_state.chat_history.append({"role": "assistant", "content": response})
-
-    # --- Figure Fetcher ---
-    st.subheader("🖼️ Gene Role Figure Finder")
-    gene_query = st.text_input("Enter gene name to fetch biological figure")
+    st.subheader("🖼️ Gene Role Figure Finder (from Google)")
+    gene_query = st.text_input("Enter gene name to fetch figure")
     if st.button("Fetch figure") and gene_query:
+        query = f"{gene_query} gene function diagram"
         search_url = "https://www.google.com/search"
         headers = {"User-Agent": "Mozilla/5.0"}
-        params = {"q": f"{gene_query} gene function diagram", "tbm": "isch"}
-        response = requests.get(search_url, headers=headers, params=params)
-        soup = BeautifulSoup(response.text, "html.parser")
-        img_tag = soup.find("img")
-        if img_tag and img_tag.get("src"):
-            st.image(img_tag["src"], caption=f"Figure for {gene_query}")
-        else:
-            st.error("No figure found.")
+        params = {"q": query, "tbm": "isch"}
+        try:
+            response = requests.get(search_url, headers=headers, params=params)
+            soup = BeautifulSoup(response.text, "html.parser")
+            img_tags = soup.find_all("img")
+            # Filter for valid external image URLs (exclude logos, base64, relative paths)
+            valid_urls = [
+                tag["src"] for tag in img_tags
+                if tag.get("src") and tag["src"].startswith("http")
+            ]
+            if valid_urls:
+                st.image(valid_urls[0], caption=f"Figure for {gene_query}")
+            else:
+                st.warning("No valid image found for your query.")
+        except Exception as e:
+            st.error(f"Image fetch failed: {e}")
 else:
     st.info("Please upload a gene result file to begin.")
