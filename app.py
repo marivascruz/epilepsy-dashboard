@@ -13,6 +13,16 @@ import json
 import html
 #st.set_page_config(layout="wide")
 st.set_page_config(layout="wide")
+DEFAULT_GENE_PROMPT = (
+    "What role does SCN1A, SCN2A, STXBP1, SLC6A1, SYNGAP1, KCNQ2, KANSL1, "
+    "KCNB1, LYSMD2, TBL1XR1, CACNA1A, MAP1LC3A, SLC22A1, CD8B, SLC25A11, "
+    "DYRK1A, ANKRD11, CCT7, GABRB3, KBTBD8, NBEA play in epilepsy? Provide "
+    "references to the papers. Include figures where appropriate. Provide what "
+    "happens to loss-of-function variants. Provide what happens to gain-of-function "
+    "variants. Provide therapeutic hypothesis. Small molecule? Antibody? Gene therapy? "
+    "Genetic medicine? Provide full therapeutic-development matrix in table form for "
+    "these genes."
+)
 st.title("🧬🧠 Epilepsy exome sequencing dashboard")
 st.markdown(
     """
@@ -151,20 +161,41 @@ if uploaded_file:
     st.subheader("🔍 Gene AI Chat Assistant")
     if "chat_history" not in st.session_state:
         st.session_state.chat_history = []
-
-    for msg in st.session_state.chat_history:
-        with st.chat_message(msg["role"]):
-            st.markdown(msg["content"])
-
-    if prompt := st.chat_input("Ask about a gene and group (e.g., What is DPM1's role in DEE?)"):
+    if "gene_prompt" not in st.session_state:
+    st.session_state.gene_prompt = DEFAULT_GENE_PROMPT
+    prompt = st.text_area(
+        "Prompt",
+        value=st.session_state.gene_prompt,
+        height=220,
+        help="Edit this prompt or click Reset to restore the default."
+    )
+    b1, b2 = st.columns([1,1])
+    with b1:
+        ask = st.button("Ask")
+    with b2:
+        reset = st.button("Reset to default")
+    if reset:
+        st.session_state.gene_prompt = DEFAULT_GENE_PROMPT
+        st.rerun()
+    if ask and prompt.strip():
         st.session_state.chat_history.append({"role": "user", "content": prompt})
-        with st.chat_message("assistant"):
-            stream = client.chat.completions.create(
-                model="gpt-5-chat-latest",
-                messages=st.session_state.chat_history,
-                stream=True,
-            )
-            response = st.write_stream(stream)
-            st.session_state.chat_history.append({"role": "assistant", "content": response})
+        with st.spinner("Thinking..."):
+            try:
+                stream = client.chat.completions.create(
+                    model="gpt-5-chat-latest",
+                    messages=st.session_state.chat_history,
+                    stream=True,
+                )
+                reply = st.write_stream(stream)
+            except Exception as e:
+                st.error(f"Chat failed: {e}")
+                reply = None
+            if reply:
+                st.session_state.chat_history.append({"role": "assistant", "content": reply})
+        # show prior messages (optional)
+    with st.expander("Show conversation history", expanded=False):
+        for msg in st.session_state.chat_history:
+            who = "🧑‍🔬 You" if msg["role"] == "user" else "🤖 Assistant"
+            st.markdown(f"**{who}:** {msg['content']}")
 else:
     st.info("Please upload a gene result file to begin.")
