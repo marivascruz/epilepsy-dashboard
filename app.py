@@ -153,10 +153,10 @@ if uploaded_file:
     st.markdown("---")  # Horizontal divider
 
     st.markdown(
-        "🧠 **Note:** Only genes with more than 15 variants were included in the unified meta regression model.",
+        "🧠 **Note:** Only genes with more than 15 variants were included in the unified meta regression model. [Paper](https://www.medrxiv.org/content/10.1101/2024.06.27.24309590v2) describing findings.",
         unsafe_allow_html=True
     )
-
+    st.caption("Source of single-variant summary statistics: [Epi25](https://epi25.broadinstitute.org)")
     # --- AI Gene Interrogation Chat ---
     st.subheader("🔍 Gene AI Chat Assistant")
     if "chat_history" not in st.session_state:
