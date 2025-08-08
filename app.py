@@ -13,16 +13,32 @@ import json
 import html
 #st.set_page_config(layout="wide")
 st.set_page_config(layout="wide")
-DEFAULT_GENE_PROMPT = (
-    "What role does SCN1A, SCN2A, STXBP1, SLC6A1, SYNGAP1, KCNQ2, KANSL1, "
-    "KCNB1, LYSMD2, TBL1XR1, CACNA1A, MAP1LC3A, SLC22A1, CD8B, SLC25A11, "
-    "DYRK1A, ANKRD11, CCT7, GABRB3, KBTBD8, NBEA play in epilepsy? Provide "
-    "references to the papers. Include figures where appropriate. Provide what "
-    "happens to loss-of-function variants. Provide what happens to gain-of-function "
-    "variants. Provide therapeutic hypothesis. Small molecule? Antibody? Gene therapy? "
-    "Genetic medicine? Provide full therapeutic-development matrix in table form for "
-    "these genes. Describe therapeutic programs for each gene."
-)
+def build_gene_prompt_from_df(df, thresh=6.5, fallback_n=20):
+    # Pick genes passing threshold
+    genes = (
+        df.loc[df["-log10_p_unified"] > thresh, "gene_name"]
+        .dropna().astype(str).unique().tolist()
+    )
+    # Fallback if none pass threshold
+    if not genes:
+        genes = (
+            df.sort_values("-log10_p_unified", ascending=False)["gene_name"]
+            .dropna().astype(str).head(fallback_n).tolist()
+        )
+
+    gene_csv = ", ".join(genes)
+
+    prompt = (
+        f"What role do {gene_csv} play in epilepsy? "
+        "Provide references to the papers (do not include PMIDs). "
+        "Include figures where appropriate. "
+        "Describe what happens to loss-of-function variants and to gain-of-function variants. "
+        "Provide therapeutic hypotheses (small molecule? antibody? gene therapy? genetic medicine?). "
+        "Provide a full therapeutic-development matrix in table form for these genes. "
+        "Describe therapeutic programs for each gene."
+    )
+    return prompt
+
 st.title("🧬🧠 Epilepsy exome sequencing dashboard")
 st.markdown(
     """
@@ -159,6 +175,13 @@ if uploaded_file:
     st.caption("Source of single-variant summary statistics: [Epi25](https://epi25.broadinstitute.org)")
     # --- AI Gene Interrogation Chat ---
     st.subheader("🔍 Gene AI Chat Assistant")
+    if "last_group" not in st.session_state:
+        st.session_state.last_group = selected_group
+    if "gene_prompt" not in st.session_state:
+        st.session_state.gene_prompt = build_gene_prompt_from_df(sorted_df, thresh=6.5)
+    if selected_group != st.session_state.last_group:
+        st.session_state.gene_prompt = build_gene_prompt_from_df(sorted_df, thresh=6.5)
+        st.session_state.last_group = selected_group
     if "chat_history" not in st.session_state:
         st.session_state.chat_history = []
     if "gene_prompt" not in st.session_state:
@@ -175,7 +198,7 @@ if uploaded_file:
     with b2:
         reset = st.button("Reset to default")
     if reset:
-        st.session_state.gene_prompt = DEFAULT_GENE_PROMPT
+        st.session_state.gene_prompt = build_gene_prompt_from_df(sorted_df, thresh=6.5)
         st.rerun()
     if ask and prompt.strip():
         st.session_state.chat_history.append({"role": "user", "content": prompt})
