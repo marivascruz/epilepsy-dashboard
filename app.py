@@ -160,7 +160,7 @@ if uploaded_file:
         st.session_state.chat_history.append({"role": "user", "content": prompt})
         with st.chat_message("assistant"):
             stream = client.chat.completions.create(
-                model="gpt-5",
+                model="gpt-5-chat-latest",
                 messages=st.session_state.chat_history,
                 stream=True,
             )
