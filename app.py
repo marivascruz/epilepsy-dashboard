@@ -21,7 +21,7 @@ DEFAULT_GENE_PROMPT = (
     "happens to loss-of-function variants. Provide what happens to gain-of-function "
     "variants. Provide therapeutic hypothesis. Small molecule? Antibody? Gene therapy? "
     "Genetic medicine? Provide full therapeutic-development matrix in table form for "
-    "these genes."
+    "these genes. Describe therapeutic programs for each gene."
 )
 st.title("🧬🧠 Epilepsy exome sequencing dashboard")
 st.markdown(
