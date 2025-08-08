@@ -30,7 +30,7 @@ def build_gene_prompt_from_df(df, thresh=6.5, fallback_n=20):
 
     prompt = (
         f"What role do {gene_csv} play in epilepsy? "
-        "Provide references to the papers (do not include PMIDs). "
+        "Provide references to the papers (do not include PMIDs or links). "
         "Include figures where appropriate. "
         "Describe what happens to loss-of-function variants and to gain-of-function variants. "
         "Provide therapeutic hypotheses (small molecule? antibody? gene therapy? genetic medicine?). "
