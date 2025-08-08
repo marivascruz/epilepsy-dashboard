@@ -39,7 +39,19 @@ def build_gene_prompt_from_df(df, thresh=6.5, fallback_n=20):
     )
     return prompt
 
-st.title("🧬🧠 Epilepsy exome sequencing dashboard")
+img_url = "https://chatgpt.com/backend-api/public_content/enc/eyJpZCI6Im1fNjg5NTcyNGZkZTM4ODE5MWI1YTcwNDVhOTdiZDVkMzU6ZmlsZV8wMDAwMDAwMDI0NzQ2MjJmODU2OTRiMzc3ZDYxYzAyNyIsInRzIjoiNDg3Mzk1IiwicCI6InB5aSIsInNpZyI6IjM1ZDkzY2E3ZTdhNTVkZmZjYTg5MzczYzBmMGU5MWY2Y2Y4ZGY2MzA1ZDhlMTUwOTRkMjgzZjQ0YjM1YmJmM2MiLCJ2IjoiMCIsImdpem1vX2lkIjpudWxsfQ=="
+
+st.markdown(
+    f"""
+    <div style="display:flex;align-items:center;gap:10px;">
+        <img src="{img_url}" style="height:300px;">
+        <span style="font-size:1.8rem; font-weight:700;">
+            🧬 Epilepsy exome sequencing dashboard
+        </span>
+    </div>
+    """,
+    unsafe_allow_html=True,
+)
 st.markdown(
     """
     <div style='text-align: left;'>
