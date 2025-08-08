@@ -162,7 +162,7 @@ if uploaded_file:
     if "chat_history" not in st.session_state:
         st.session_state.chat_history = []
     if "gene_prompt" not in st.session_state:
-    st.session_state.gene_prompt = DEFAULT_GENE_PROMPT
+        st.session_state.gene_prompt = DEFAULT_GENE_PROMPT
     prompt = st.text_area(
         "Prompt",
         value=st.session_state.gene_prompt,
