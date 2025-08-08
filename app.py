@@ -45,8 +45,8 @@ st.markdown(
     f"""
     <div style="display:flex;align-items:center;gap:10px;">
         <img src="{img_url}" style="height:300px;">
-        <span style="font-size:1.8rem; font-weight:700;">
-            🧬 Epilepsy exome sequencing dashboard
+        <span style="font-size:5.4rem; font-weight:700;">
+            Epilepsy exome sequencing dashboard
         </span>
     </div>
     """,
@@ -56,7 +56,7 @@ st.markdown(
     """
     <div style='text-align: left;'>
         <a href='https://rivaslab.stanford.edu' target='_blank'>
-    <p style='font-size: 0.9em;'><img src='https://mrivas.su.domains/gbe/wp-content/uploads/2025/01/gbe.png' width='100'/>Built by Rivas Lab
+    <p style='font-size: 0.9em;'><img src='https://mrivas.su.domains/gbe/wp-content/uploads/2025/01/gbe.png' width='100'/>Built by Rivas Lab: Oscar Aguilar, Mijail Rivas, Manuel A. Rivas
        </p> </a>
     </div>
     """,
